@@ -1,0 +1,67 @@
+<h3>Jak uzyskać dane z wyborów?</h3>
+<section>
+  <pre><code class="python">    
+    urlpatterns = [
+        url(r'^api/stats/geography/$', get_geography, name='geography'),
+        url(r'^api/stats/(?P<election_type>.+)/district-(?P<district>[\w|\W]+)/circle-(?P<number_of_district>[0-9]+)/circuit-(?P<number_of_electoral_circuit>[0-9]+)/$',
+            get_stats, name='electoral-circuit-stats'),
+        url(r'^api/stats/(?P<election_type>.+)/district-(?P<district>[\w|\W]+)/circuit-(?P<number_of_electoral_circuit>[0-9]+)/$',
+            get_stats, name='district-stats'),
+        url(r'^api/stats/(?P<election_type>.+)/district-(?P<district>[\w|\W]+)/circle-(?P<number_of_district>[0-9]+)/$',
+            get_stats, name='electoral-circle-stats'),
+        url(r'^api/stats/(?P<election_type>.+)/circle-(?P<number_of_district>[0-9]+)/$',
+            get_stats, name='district-stats'), 
+        url(r'^api/stats/(?P<election_type>.+)/circle-(?P<number_of_district>[0-9]+)/circuit-(?P<number_of_electoral_circuit>[0-9]+)/$',
+            get_stats, name='district-stats'),
+        url(r'^api/stats/(?P<election_type>.+)/district-(?P<district>[\w|\W]+)/$',
+            get_stats, name='district-stats'),
+    ]
+  </code></pre>
+</section>
+
+<section>
+  <pre><code class="python">
+  class Address(models.Model):
+      number_of_district = models.IntegerField(default=0)
+      district = models.CharField(max_length=50, default=None, null=True, blank=True)
+      number_of_electoral_circuit = models.IntegerField(default=0)
+      number_electoral_circuits = models.IntegerField(default=0, null=True, blank=True)
+
+      class Meta:
+          abstract = True
+
+  class Election(Address):
+      election_type = models.CharField(max_length=511, default=None)
+      notes = models.TextField(default='[]')
+  </code></pre>
+</section>
+
+<section>
+<h3>Get Stats</h3>
+<pre><code class="python">
+    def get_stats(request, **kwargs):
+        votes_kwargs = {}
+
+        for v in Vote.objects.filter(**votes_kwargs).distinct('political_party'):
+            votes_kwargs['political_party'] = v.political_party
+            obj = {
+                'political_party': v.political_party,
+                'amount': Vote.objects.filter(**votes_kwargs).aggregate(Sum('amount'))['amount__sum']
+            }
+            votes_kwargs.pop('political_party')
+            obj['percentage'] = round(float(obj['amount'])/ Vote.objects.filter(**votes_kwargs).aggregate(Sum('amount'))['amount__sum']*100, 2)
+            district_data['votes'].append(obj)
+
+        return JsonResponse(district_data)
+</code></pre></section>
+<section>
+<h3>Areas Tree</h3>
+<pre><code class="javascript">
+{
+    "name": "Wybory do Rady Miasta",
+    "type": "city_council",
+    "children": [],
+    "url": "stats/city_council/"
+}
+</code></pre>
+</section>

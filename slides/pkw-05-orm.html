@@ -1,0 +1,16 @@
+<section>
+<img src="resources/sample_json.png">
+</section>
+<section>
+  <pre><code class="python">
+    class Vote(models.Model):
+        election = models.ForeignKey(Election, null=True, blank=True)
+        political_party = models.CharField(max_length=2047, default=None)
+        amount = models.IntegerField(default=0)
+  </code></pre>
+</section>
+
+<aside class="notes">
+    Put your speaker notes here.
+    You can see them pressing 's'.
+</aside>
