@@ -1,8 +1,56 @@
-<h2>pkw-06-bad-data-upload</h2>
+<h2>Import danych do bazy</h2>
+<section>
+  <pre class="fragment"><code class="python">
+    def create_models(request):
+        json_file = json.load(request.FILES['file'])
+        type = request.POST['options']
 
-<p>Please change me!</p>
+        for obj in json_file:
+            new_model = {'election_type': type}
+            votes = []
+            for k, v in obj.iteritems():
+                if 'Pkt' in k:
+                    try:
+                        new_model['notes'].append({k: v})
+                    except:
+                        new_model['notes'] = [{k: v}]
+                    continue
+                
+                k_coded = coder[k.encode('utf-8')]
+
+                if 'kw' in k_coded or 'prez' in k_coded:
+                    vote = Vote(political_party=k, amount=v)
+                    vote.save()
+                    votes.append(vote)
+                else:
+                    if 'Gmina' == k:
+                        new_model['district'] = v
+                    else:
+                        new_model[coder[k.encode('utf-8')]] = v
+            try:
+                new_model['notes'] = json.dumps(new_model['notes'])
+            except:
+                pass
+            if type != 'candidate':
+                election_model = Election(**new_model)
+                election_model.save()
+            elif type == 'candidate':
+                election_model = Candidate(**new_model)
+                election_model.save()
+                continue
+
+            for v in votes:
+                v.election = election_model
+                v.save()
+  </code></pre>
+</section>
+<section>
+  <p>Co poszło nie tak?</p>
+</section>
+<section>
+  <p>python-rq</p>
+</section>
 
 <aside class="notes">
-    Put your speaker notes here.
-    You can see them pressing 's'.
+    Dane zaimportowałem za pomocą mega niewydajnej funkcji, która nie musiała w zamierzeniu szybko działać
 </aside>

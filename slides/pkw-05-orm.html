@@ -1,6 +1,15 @@
 <section>
-<img src="resources/sample_json.png">
+  <img src="resources/sample_json.png">
 </section>
+
+<section>
+  <pre><code class="python">
+    class Election(models.Model):
+        votes = models.CharField(max_length=2047, default=None)
+        # "[{'political_party': 'PO', 'amount':2137}]"
+  </code></pre>
+</section>
+
 <section>
   <pre><code class="python">
     class Vote(models.Model):
@@ -11,6 +20,6 @@
 </section>
 
 <aside class="notes">
-    Put your speaker notes here.
-    You can see them pressing 's'.
+    > Zaprojektowanie abstrakcji w ORM
+        > VOTE, dobrze i źle
 </aside>
