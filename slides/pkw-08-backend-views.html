@@ -37,10 +37,13 @@
 </section>
 
 <section>
-<h3>Get Stats</h3>
 <pre><code class="python">
     def get_stats(request, **kwargs):
         votes_kwargs = {}
+
+        for k, v in kwargs.iteritems():
+        if k != 'political_party':
+            votes_kwargs['election__' + k] = float(v) if 'number' in k else v
 
         for v in Vote.objects.filter(**votes_kwargs).distinct('political_party'):
             votes_kwargs['political_party'] = v.political_party
@@ -55,7 +58,7 @@
         return JsonResponse(district_data)
 </code></pre></section>
 <section>
-<h3>Areas Tree</h3>
+<h4>Areas Tree</h4>
 <pre><code class="javascript">
 {
     "name": "Wybory do Rady Miasta",
