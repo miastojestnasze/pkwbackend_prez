@@ -1,0 +1,97 @@
+<h3>Jak uzyskać dane z wyborów?</h3>
+<section>
+  <pre><code class="python">    
+    urlpatterns = [
+        url(r'^api/stats/geography/$', get_geography, name='geography'),
+        url(r'^api/stats/(?P<election_type>.+)/district-(?P<district>[\w|\W]+)/circle-(?P<number_of_district>[0-9]+)/circuit-(?P<number_of_electoral_circuit>[0-9]+)/$',
+            get_stats, name='electoral-circuit-stats'),
+        url(r'^api/stats/(?P<election_type>.+)/district-(?P<district>[\w|\W]+)/circuit-(?P<number_of_electoral_circuit>[0-9]+)/$',
+            get_stats, name='district-stats'),
+        url(r'^api/stats/(?P<election_type>.+)/district-(?P<district>[\w|\W]+)/circle-(?P<number_of_district>[0-9]+)/$',
+            get_stats, name='electoral-circle-stats'),
+        url(r'^api/stats/(?P<election_type>.+)/circle-(?P<number_of_district>[0-9]+)/$',
+            get_stats, name='district-stats'), 
+        url(r'^api/stats/(?P<election_type>.+)/circle-(?P<number_of_district>[0-9]+)/circuit-(?P<number_of_electoral_circuit>[0-9]+)/$',
+            get_stats, name='district-stats'),
+        url(r'^api/stats/(?P<election_type>.+)/district-(?P<district>[\w|\W]+)/$',
+            get_stats, name='district-stats'),
+    ]
+  </code></pre>
+  <aside class="notes">
+  Został właściwie tydzień skończenia w miarę działającej wersji aplikacji. Tego dnia miałem zaprezentować pkw przed ludźmi z MJN. Ten drugi z deadline'ów decydował o tym, czy w ogóle MJN odważy się firmować tę stronę swoim logo a przy okazji da ogromne wsparcie medialne.
+
+  I w tej sytuacji rodzi się ogromna pokusa, aby skończyć jak najszybciej i byle jak. Ale ja nadal postanowiłem jednak zrobić inaczej.
+
+  We wspomnianym tygodniu zrobiłem przede wszystkim główną część backendu endpointy dla danych z wyborów. Jak sami widzicie tych endpointów jest trochę. Na samym początku przeraziłem się że przyjdzie mi pisać osobny widok zależnie od urla. Na szczęście przypomniałem sobie, że python wręcz zachęca do zrobienia tego lepiej.
+
+  Spójrzcie na zmienne w urlach, np. district.
+  </aside>
+</section>
+
+<section>
+  <pre><code class="python">
+  class Address(models.Model):
+      number_of_district = models.IntegerField(default=0)
+      district = models.CharField(max_length=50, default=None, null=True, blank=True)
+      number_of_electoral_circuit = models.IntegerField(default=0)
+      number_electoral_circuits = models.IntegerField(default=0, null=True, blank=True)
+
+      class Meta:
+          abstract = True
+
+  class Election(Address):
+      election_type = models.CharField(max_length=511, default=None)
+      notes = models.TextField(default='[]')
+  </code></pre>
+  <aside class="notes">
+  Tą samą nazwę mamy w abstrakcji ORM'em. Co można z tym fantem zrobić?
+  </aside>
+</section>
+
+<section>
+  <pre><code class="python">
+      def get_stats(request, **kwargs):
+          votes_kwargs = {}
+
+          for k, v in kwargs.iteritems():
+          if k != 'political_party':
+              votes_kwargs['election__' + k] = float(v) if 'number' in k else v
+
+          for v in Vote.objects.filter(**votes_kwargs).distinct('political_party'):
+              votes_kwargs['political_party'] = v.political_party
+              obj = {
+                  'political_party': v.political_party,
+                  'amount': Vote.objects.filter(**votes_kwargs).aggregate(Sum('amount'))['amount__sum']
+              }
+              votes_kwargs.pop('political_party')
+              obj['percentage'] = round(float(obj['amount'])/ Vote.objects.filter(**votes_kwargs).aggregate(Sum('amount'))['amount__sum']*100, 2)
+              district_data['votes'].append(obj)
+
+          return JsonResponse(district_data)
+  </code></pre>
+
+  <aside class="notes">
+  Użyć do filtrowania. A przy okazji zamiast pisać siedem widoków, użyć kwargów do tego. I dzięki wystarczy tylko jeden.
+    </aside>
+
+</section>
+<section>
+<h4>Areas Tree</h4>
+<pre><code class="javascript">
+{
+    "name": "Wybory do Rady Miasta",
+    "type": "city_council",
+    "children": [],
+    "url": "stats/city_council/"
+}
+</code></pre>
+  <aside class="notes">
+  Mamy więc jsony z danymi, więc pora nawigację na witrynie, która ułatwi nam proszenie o konkretny typ danych.
+
+  Dlatego zrobiłem endpoint z drzewkiem regionów, który składa się z takich node'ów jak np. ten. 
+
+  Dzięki temu frontend nie musi tego robić po swojej stronie. To bardzo przyśpiesza działanie aplikacji.
+
+  I ok, mamy endpointy, jest niedziela dwa dni przed prezentacją dla MJN a na froncie NIC nie działa. Kompletnie nic. Co w takiej sytuacji się robi? ZAPIERDALA. Po prostu, w tej sytuacji się zapierdala, aby otworzyć oczy tym niedowiarkom.
+  </aside>
+</section>
