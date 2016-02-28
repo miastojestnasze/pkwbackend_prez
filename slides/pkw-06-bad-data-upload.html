@@ -43,14 +43,27 @@
                 v.election = election_model
                 v.save()
   </code></pre>
+  <aside class="notes">I zrobiłem to źle.
+
+    Ale od początku. Ogólnie idea była taka, żeby backend mógł publikować także wyniki innych wyborów. Poza tym nie chciałem kopiować bazy danych z serwera lokalnego na produkcyjny. Dlatego też napisałem widok do wrzucania jsonów, gdzie pod spodem była taka brzydka funkcja. Ona nie musiała szybko działać, gdyż takie operacje wykonuje się relatywnie rzadko. I tak też było - ona w najgorszym wypadku wrzucała dane 3 minuty.
+</aside>
 </section>
 <section>
   <p>Co poszło nie tak?</p>
+  <aside class="notes">
+    Coś co nie było problemem na serwerze lokalnym, okazało się nim na heroku, które po 30 sekundach braku odpowiedzi ze strony aplikacji pokazuje Ci faka.
+
+    O tym problemie dowiedziałem się dzień przed premierą aplikacji, dlatego nie miałem czasu faktycznie rozwiązać problem. Pokornie przekopiowałem bazkę z lokalnej instancji serwera na heroku. 
+
+  </aside>
 </section>
 <section>
-  <p>python-rq</p>
-</section>
+  <h3>Rozwiązanie?</h3>
+  <p>Background Taski</p>
+  <aside class="notes">
+    Aczkolwiek po tym wszystkim dowiedziałem się, że takie coś najlepiej rozwiazać używając background tasków.
 
-<aside class="notes">
-    Dane zaimportowałem za pomocą mega niewydajnej funkcji, która nie musiała w zamierzeniu szybko działać
-</aside>
+    Ok, mamy więc dane wrzucone do aplikacji, i co można robić? Endpointy?
+    Nie, frontend.
+  </aside>
+</section>

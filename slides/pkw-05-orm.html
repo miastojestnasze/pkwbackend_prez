@@ -1,5 +1,13 @@
 <section>
   <img src="resources/sample_json.png">
+  <aside class="notes">
+    Najważniejsze w tej aplikacji są oczywiście dane, a żeby móc je zwizualizować, to trzeba je wrzucić. A zanim się je wrzuci, wypada zaprojektować modele djangowe.
+
+    Mamy taki typowy json, który zawiera w sobie informacje o wszystkim co jest w danym obwodzie wyborczym...
+
+    Problem opjawia się przy przechowywania głosów na danego kandydata lub partię w danym obwodzie wyborczym. Otóz liczba partii jest różna zależnie typu wyborów, okręgu wyborczego. I tu się tu się rodzi pytanie, jak sensownie to wrzucić do baza danych?
+  </aside>
+
 </section>
 
 <section>
@@ -8,6 +16,11 @@
         votes = models.CharField(max_length=2047, default=None)
         # "[{'political_party': 'PO', 'amount':2137}]"
   </code></pre>
+  <aside class="notes">
+    Mój pierwszy polegał na tym, aby trzymać (eee makarena) przekonwertowaną do stringa tablicę obiektów z hashami takimi jak...
+
+    To już samo w sobie brzmi źle. I to była bardzo zła koncepcja, gdyż de facto skazujemy się tym sposobem na wiele niepotrzebnych obliczeń, które nam potem spowolnią aplikację. I co najważniejsze, tym sposobem nie wykorzystujemy największej siły postgresa.
+  </aside>
 </section>
 
 <section>
@@ -17,9 +30,10 @@
         political_party = models.CharField(max_length=2047, default=None)
         amount = models.IntegerField(default=0)
   </code></pre>
-</section>
+  <aside class="notes">
+    Czyli tego, że jest świetną relacyjną bazą danych.
+    I po konsultacji z CTO z mojej firmy stworzyłem całkowicie nowy model, który to ma. Dzięki temu można na nim stosować wszystkie fajne operacje typu sumowanie i grubowanie. To okazało się niezwykle pomocne przy pisaniu endpointów.
 
-<aside class="notes">
-    > Zaprojektowanie abstrakcji w ORM
-        > VOTE, dobrze i źle
-</aside>
+    Ok,już mamy abstrakcje, to wypada dane wrzucić.
+  </aside>
+</section>
