@@ -1,8 +1,16 @@
 .mjn-logo {
-  position: absolute;
-  width: 8%;
+  width: 175px;
+  height: 175px;
+  background: white;
+  border-radius: 50%;
+}
+
+.mjn-logo > .mjn-logo-inner {
   border: none;
-  left: 0px
+  max-width: 140px;
+  box-shadow: initial;
+  border-radius: 30px;
+}
 }
 
 .pkw-face {
